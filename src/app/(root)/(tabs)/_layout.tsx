@@ -24,70 +24,74 @@ const TabIcon = ({
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   return (
-    <Tabs
-      safeAreaInsets={{ bottom: 0 }}
-      initialRouteName="home"
-      screenOptions={{
-        tabBarActiveTintColor: "white",
-        tabBarInactiveTintColor: "white",
-        tabBarShowLabel: false,
-        tabBarIconStyle: {
-          width: 48,
-          height: "100%",
-        },
-        tabBarStyle: {
-          backgroundColor: "#333333",
-          borderRadius: 100,
-          height: 64,
-          borderTopWidth: 0,
-          paddingTop: 0,
-          paddingBottom: 0,
-          overflow: "hidden",
-          marginHorizontal: 20,
-          marginBottom: Math.max(insets.bottom, 20),
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} source={icons.home} />
-          ),
+    <View style={{ flex: 1, backgroundColor: "#f4f4f5" }}>
+      <Tabs
+        safeAreaInsets={{ bottom: 0 }}
+        initialRouteName="home"
+
+        screenOptions={{
+          sceneStyle: { backgroundColor: "#f4f4f5" },
+          tabBarActiveTintColor: "white",
+          tabBarInactiveTintColor: "white",
+          tabBarShowLabel: false,
+          tabBarIconStyle: {
+            width: 48,
+            height: "100%",
+          },
+          tabBarStyle: {
+            backgroundColor: "#333333",
+            borderRadius: 100,
+            height: 64,
+            borderTopWidth: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            overflow: "hidden",
+            marginHorizontal: 20,
+            marginBottom: Math.max(insets.bottom, 20),
+          },
         }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: "Chat",
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} source={icons.list} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="rides"
-        options={{
-          title: "Rides",
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} source={icons.chat} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} source={icons.profile} />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: "Home",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon focused={focused} source={icons.home} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: "Chat",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon focused={focused} source={icons.list} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="rides"
+          options={{
+            title: "Rides",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon focused={focused} source={icons.chat} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon focused={focused} source={icons.profile} />
+            ),
+          }}
+        />
+      </Tabs>
+    </View>
   );
 }

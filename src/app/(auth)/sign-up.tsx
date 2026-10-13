@@ -1,4 +1,5 @@
 import { icons, images } from "@/constants";
+import { fetchAPI } from "@/lib/fetch";
 import { useAuth, useSignUp } from "@clerk/expo";
 import { Link, Redirect, router } from "expo-router";
 import { useRef, useState } from "react";
@@ -29,6 +30,7 @@ const SignUp = () => {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const requestInFlight = useRef(false);
+  const savedClerkId = useRef<string | null>(null);
   const [completedHere, setCompletedHere] = useState(false);
   const [verificationState, setVerificationState] = useState<
     "none" | "pending" | "success"
@@ -48,7 +50,9 @@ const SignUp = () => {
           "longMessage" in error &&
           typeof error.longMessage === "string"
           ? error.longMessage
-          : "Something went wrong. Check your connection and try again.",
+          : error instanceof Error
+            ? error.message
+            : "Something went wrong. Check your connection and try again.",
       );
     } finally {
       requestInFlight.current = false;
@@ -67,6 +71,20 @@ const SignUp = () => {
     // Keep this screen mounted while Clerk activates the new session.
     setCompletedHere(true);
     try {
+      const clerkId = signUp.createdUserId;
+      if (!clerkId) throw new Error("Clerk has not created a user yet.");
+      if (savedClerkId.current !== clerkId) {
+        await fetchAPI("/user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            email: signUp.emailAddress || form.email.trim(),
+            clerkId,
+          }),
+        });
+        savedClerkId.current = clerkId;
+      }
       const { error } = await signUp.finalize();
       if (error) throw error;
     } catch (error) {
@@ -96,7 +114,7 @@ const SignUp = () => {
       const { error } = await signUp.password({
         emailAddress,
         password: form.password,
-        unsafeMetadata: { name },
+        firstName: name,
       });
       if (error) throw error;
       if (signUp.status === "complete") {
