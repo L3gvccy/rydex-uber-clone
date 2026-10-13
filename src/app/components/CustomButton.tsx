@@ -6,9 +6,9 @@ const getBgVariantStyle = (variant: ButtonProps["bgVariant"]) => {
     case "secondary":
       return "bg-gray-500";
     case "danger":
-      return "bg-gray-500";
+      return "bg-red-500";
     case "success":
-      return "bg-gray-500";
+      return "bg-green-500";
     case "outline":
       return "bg-transparent border border-gray-300";
     default:

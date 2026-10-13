@@ -1,7 +1,10 @@
 import { icons, images } from "@/constants";
-import { Link } from "expo-router";
+import { useAuth, useSignUp } from "@clerk/expo";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -9,18 +12,68 @@ import {
   Text,
   View,
 } from "react-native";
+import ReactNativeModal from "react-native-modal";
 import CustomButton from "../components/CustomButton";
 import InputField from "../components/InputField";
 import OAuth from "../components/OAuth";
 
 const SignUp = () => {
+  const { isLoaded, isSignedIn } = useAuth();
+  const { signUp } = useSignUp();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [code, setCode] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationState, setVerificationState] = useState<
+    "none" | "pending" | "success"
+  >("none");
 
-  const onSignUpPress = () => {};
+  const onSignUpPress = async () => {
+    const { error } = await signUp.password({
+      emailAddress: form.email,
+      password: form.password,
+    });
+    if (error) {
+      Alert.alert("Error", error.message);
+      console.log(error);
+      // See https://clerk.com/docs/guides/development/custom-flows/error-handling
+      return;
+    }
+
+    const { error: sendError } = await signUp.verifications.sendEmailCode();
+    if (sendError) {
+      console.log(sendError);
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationState("pending");
+  };
+
+  const onPressVerify = async () => {
+    const { error } = await signUp.verifications.verifyEmailCode({ code });
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const { error: finalizeError } = await signUp.finalize();
+    if (finalizeError) {
+      console.log(finalizeError);
+    }
+  };
+
+  if (!isLoaded) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -86,6 +139,54 @@ const SignUp = () => {
               </Link>
             </Text>
           </View>
+
+          <ReactNativeModal isVisible={verificationState === "pending"}>
+            <View className="flex items-center justify-center bg-white px-7 py-9 rounded-3xl min-h-[300px]">
+              <Text className="text-3xl font-Jakarta-SemiBold ">
+                Verification
+              </Text>
+              <Text className="text-lg text-gray-400 text-center px-8 my-[12px]">
+                We've sent verification code to {form.email}
+              </Text>
+              <InputField
+                label="Code"
+                placeholder="123456"
+                icon={icons.lock}
+                value={code}
+                keyboardType="numeric"
+                onChangeText={(value) => {
+                  setCode(value);
+                }}
+              />
+              <CustomButton
+                onPress={() => {
+                  router.replace("/(root)/(tabs)/home");
+                }}
+                title="Verify Email"
+                bgVariant="success"
+                className="h-[56px] mt-[24px]"
+              />
+            </View>
+          </ReactNativeModal>
+
+          <ReactNativeModal isVisible={verificationState === "success"}>
+            <View className="flex items-center justify-center bg-white px-7 py-9 rounded-3xl min-h-[200px]">
+              <Image source={images.check} className="w-[110px] h-[110px]" />
+              <Text className="text-3xl font-Jakarta-SemiBold mt-[40px]">
+                Verified!
+              </Text>
+              <Text className="text-lg text-gray-400 text-center px-8 mt-[12px]">
+                You have successfully verified your account.
+              </Text>
+              <CustomButton
+                onPress={() => {
+                  router.replace("/(root)/(tabs)/home");
+                }}
+                title="Browse Home"
+                className="h-[56px] mt-[40px]"
+              />
+            </View>
+          </ReactNativeModal>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
